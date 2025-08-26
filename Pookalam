@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onam Pookkalam</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: darkblue;
+        }
+        canvas {
+            border: 2px solid gold;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="pookkalamCanvas" width="800" height="800"></canvas>
+    <script>
+        const canvas = document.getElementById('pookkalamCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Center the canvas
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+
+        // Function to convert HSL to RGB
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1 / 6) return p + (q - p) * 6 * t;
+                    if (t < 1 / 2) return q;
+                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1 / 3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1 / 3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        // Function to draw a single star-like flower
+        function drawFlower(x, y, radius, color, sides) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            for (let i = 0; i < sides * 2; i++) {
+                const angle = (i * 360 / (sides * 2)) * Math.PI / 180;
+                const r = i % 2 === 0 ? radius : radius / 2; // Alternate radius for star shape
+                ctx.lineTo(
+                    x + r * Math.cos(angle),
+                    y + r * Math.sin(angle)
+                );
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Function to draw a spiral layer with flowers
+        function drawSpiralLayer(startRadius, numFlowers, color, sides) {
+            const angle = 360 / numFlowers;
+            for (let i = 0; i < numFlowers; i++) {
+                const theta = (i * angle) * Math.PI / 180;
+                const x = startRadius * Math.cos(theta);
+                const y = startRadius * Math.sin(theta);
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(15 * Math.PI / 180); // Slight twist
+                drawFlower(0, 0, 20, color, sides);
+                ctx.restore();
+            }
+        }
+
+        // Function to generate bright, festive colors
+        function getColor(hue) {
+            const [r, g, b] = hslToRgb(hue, 0.85, 0.75); // Increased lightness for vibrancy
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Draw the Pookkalam
+        function drawPookkalam() {
+            // Clear canvas to ensure clean drawing
+            ctx.clearRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+
+            const layers = 4;
+            for (let layer = 0; layer < layers; layer++) {
+                const hue = (layer / layers + Math.random() * 0.2) % 1.0;
+                const color = getColor(hue);
+                const radius = 60 + layer * 50;
+                const numFlowers = 8 + layer * 4;
+                const sides = 5 + layer;
+                drawSpiralLayer(radius, numFlowers, color, sides);
+            }
+
+            // Central decorative element (lotus-like)
+            ctx.fillStyle = 'gold';
+            ctx.beginPath();
+            for (let i = 0; i < 36; i++) {
+                const angle = (i * 10) * Math.PI / 180;
+                const r = 30 + 10 * Math.sin(i * 20 * Math.PI / 180); // Wavy radius for petal effect
+                ctx.lineTo(
+                    r * Math.cos(angle),
+                    r * Math.sin(angle)
+                );
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Execute the drawing
+        drawPookkalam();
+    </script>
+</body>
+</html>
